@@ -68,7 +68,7 @@ class StackManager:
                 else:
                     raise StreamError("Should pass a {type}".format(type=self.type))
                 if self.auto_commit:
-                    self.commit()
+                    return self.commit()
         
         def reset(self):
             del self.stack[:]
@@ -80,9 +80,10 @@ class StackManager:
             return {self.header.value:action_json}
 
         def commit(self,auto_reset=True):
-            self.stream_method.send(self.action())
+            response = self.stream_method.send(self.action())
             if auto_reset:
                 self.reset()
+            return response
 
         def json(self):
             return json.dumps({self.header:dict(self.stack)})
@@ -99,7 +100,7 @@ class GephiREST:
                                                                                    workspace=self.workspace)
     def send(self,action):
         url = self._generate_url()
-        requests.post(url, data=json.dumps(action))
+        return requests.post(url, data=json.dumps(action))
 
 # Gephi Streaming via Websocket
 class GephiWS:
